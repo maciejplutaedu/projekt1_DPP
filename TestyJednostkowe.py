@@ -30,3 +30,4 @@ def calculate_discount(price, discount):
     price=price*discount
     return price
 
+#1
