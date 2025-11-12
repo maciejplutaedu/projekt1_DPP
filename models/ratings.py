@@ -12,11 +12,11 @@ from database import Base
 
 
 class Rating(Base):
-    __tablename__ = "rating"
+    __tablename__ = "ratings"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     userId: Mapped[int] = mapped_column(Integer)
-    movieId: Mapped[int] = mapped_column(ForeignKey("movie.id"))
+    movieId: Mapped[int] = mapped_column(ForeignKey("movies.id"))
     rating: Mapped[float] = mapped_column(Float)
     timestamp: Mapped[int] = mapped_column(Integer)
 

@@ -12,11 +12,11 @@ from database import Base
 
 
 class Tag(Base):
-    __tablename__ = "tag"
+    __tablename__ = "tags"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     userId: Mapped[int] = mapped_column(Integer)
-    movieId: Mapped[int] = mapped_column(ForeignKey("movie.id"))
+    movieId: Mapped[int] = mapped_column(ForeignKey("movies.id"))
     tag: Mapped[str] = mapped_column(String(255))
     timestamp: Mapped[int] = mapped_column(Integer)
 

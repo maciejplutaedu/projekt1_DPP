@@ -23,7 +23,6 @@ def load_links(db):
     with open("data/links.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            # Some links might have missing IMDb or TMDB IDs
             imdb = row["imdbId"] or None
             tmdb = row["tmdbId"] or None
 
@@ -75,10 +74,10 @@ def load_all_data():
         load_links(db)
         load_ratings(db)
         load_tags(db)
-        print("✅ All data loaded successfully!")
+        print("All data loaded successfully!")
     except IntegrityError as e:
         db.rollback()
-        print(f"⚠️ Database error: {e}")
+        print(f"Database error: {e}")
     finally:
         db.close()
 
