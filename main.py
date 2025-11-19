@@ -10,7 +10,7 @@ from database import get_db
 from database import engine
 from database import Base
 from sqlalchemy.orm import Session
-from fastapi import Depends
+from fastapi import Depends, FastAPI, HTTPException
 
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
@@ -21,17 +21,20 @@ class Movie(BaseModel):
     genres: str
 
 class Link(BaseModel):
+    id: int
     movieId: int
     imdbId: str
     tmdbId: str
 
 class Rating(BaseModel):
+    id: int
     userId: int
     movieId: int
     rating: float
     timestamp: int
 
 class Tag(BaseModel):
+    id: int
     userId: int
     movieId: int
     tag: str
@@ -117,6 +120,7 @@ def startup_event():
         link_data = load_links_from_file(r"C:\Users\maciek\PycharmProjects\ApiZaj4\data\links.csv")
         for link in link_data:
             db_link = links.Link(
+                id=link.id,
                 movieId=link.movieId,
                 imdbId=link.imdbId,
                 tmdbId=link.tmdbId
@@ -129,6 +133,7 @@ def startup_event():
         rating_data = load_ratings_from_file(r"C:\Users\maciek\PycharmProjects\ApiZaj4\data\ratings.csv")
         for rating in rating_data:
             db_rating = ratings.Rating(
+                id=rating.id,
                 userId=rating.userId,
                 movieId=rating.movieId,
                 rating=rating.rating,
@@ -142,6 +147,7 @@ def startup_event():
         tag_data = load_tags_from_file(r"C:\Users\maciek\PycharmProjects\ApiZaj4\data\tags.csv")
         for tag in tag_data:
             db_tag = tags.Tag(
+                id=tag.id,
                 userId=tag.userId,
                 movieId=tag.movieId,
                 tag=tag.tag,
@@ -153,19 +159,110 @@ def startup_event():
 
     db.close()
 
+
+#
+#
+#   Movies
+#
+#
 @app.get("/movies", response_model=List[Movie])
 def get_movies(db: Session = Depends(get_db)):
     db_movies = db.query(movies.Movie).all()
     return db_movies
 
+@app.post("/movies", response_model=Movie)
+def create_movie(movie: Movie, db: Session = Depends(get_db)):
+    db_movie = movies.Movie(**movie.dict())
+    db.add(db_movie)
+    db.commit()
+    db.refresh(db_movie)
+    return db_movie
+
+@app.get("/movies/{movie_id}", response_model=Movie)
+def get_movie(movie_id: int, db: Session = Depends(get_db)):
+    return db.query(movies.Movie).get(movie_id)
+
+
+@app.put("/movies/{movie_id}", response_model=Movie)
+def update_movie(movie_id: int, movie: Movie, db: Session = Depends(get_db)):
+    db_movie = db.query(movies.Movie).filter(movies.Movie.id == movie_id).first()
+    if not db_movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+
+    for key, value in movie.dict().items():
+        setattr(db_movie, key, value)
+
+    db.commit()
+    db.refresh(db_movie)
+    return db_movie
+
+@app.delete("/movies/{movie_id}")
+def delete_movie(movie_id: int, db: Session = Depends(get_db)):
+    db_movie = db.query(movies.Movie).filter(movies.Movie.id == movie_id).first()
+    if not db_movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+
+    db.delete(db_movie)
+    db.commit()
+    return {"message": "Movie deleted successfully"}
+
+#
+#
+#   LINKS
+#
+#
+
 @app.get("/links", response_model=List[Link])
 def get_links(db: Session = Depends(get_db)):
     return db.query(links.Link).all()
+
+@app.post("/links", response_model=Movie)
+def create_link(link: Link, db: Session = Depends(get_db)):
+    db_link = links.Link(**link.dict())
+    db.add(db_link)
+    db.commit()
+    db.refresh(db_link)
+    return db_link
+@app.get("/links/{link_id}", response_model=Link)
+def get_link(link_id: int, db: Session = Depends(get_db)):
+    return db.query(links.Link).get(link_id)
+
+
+@app.put("/links/{link_id}", response_model=Movie)
+def update_link(link_id: int, link: Link, db: Session = Depends(get_db)):
+    db_link = db.query(links.Link).filter(links.Link.id == link_id).first()
+    if not db_link:
+        raise HTTPException(status_code=404, detail="Movie not found")
+
+    for key, value in link.dict().items():
+        setattr(db_link, key, value)
+
+    db.commit()
+    db.refresh(db_link)
+    return db_link
+
+@app.delete("/links/{link_id}")
+def delete_link(link_id: int, db: Session = Depends(get_db)):
+    db_link = db.query(links.Link).filter(movies.Movie.id == link_id).first()
+    if not db_link:
+        raise HTTPException(status_code=404, detail="Link not found")
+
+    db.delete(db_link)
+    db.commit()
+    return {"message": "Link deleted successfully"}
 
 @app.get("/ratings", response_model=List[Rating])
 def get_ratings(db: Session = Depends(get_db)):
     return db.query(ratings.Rating).all()
 
+@app.get("/ratings/{rating_id}", response_model=Rating)
+def get_rating(rating_id: int, db: Session = Depends(get_db)):
+    return db.query(ratings.Rating).get(rating_id)
+
 @app.get("/tags", response_model=List[Tag])
 def get_tags(db: Session = Depends(get_db)):
     return db.query(tags.Tag).all()
+
+@app.get("/tags/{tag_id}", response_model=Tag)
+def get_tag(tag_id: int, db: Session = Depends(get_db)):
+    return db.query(tags.Tag).get(tag_id)
