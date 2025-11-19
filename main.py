@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, Security
+from fastapi import FastAPI, HTTPException, Depends, Security, security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from datetime import datetime, timedelta
@@ -66,3 +66,16 @@ def create_user(user: UserCreate, token_data=Depends(verify_token)):
     USERS_DB[username] = {"password": hashed_pw, "roles": user.roles}
 
     return {"message": f"User '{username}' created successfully", "roles": user.roles}
+
+@app.get("/user_details")
+def user_details(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return {
+            "username": payload.get("sub"),
+            "issued_at": payload.get("iat"),
+            "expires_at": payload.get("exp")
+        }
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
