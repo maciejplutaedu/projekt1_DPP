@@ -68,7 +68,7 @@ def create_user(user: UserCreate, token_data=Depends(verify_token)):
     return {"message": f"User '{username}' created successfully", "roles": user.roles}
 
 @app.get("/user_details")
-def user_details(credentials: HTTPAuthorizationCredentials = Depends(security)):
+def user_details(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
     token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
