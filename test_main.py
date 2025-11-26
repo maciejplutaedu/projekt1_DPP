@@ -41,7 +41,7 @@ def client(db_session):
     app.dependency_overrides.clear()
 
 
-# --- RATINGS TESTS ---
+# --- MOVIes TESTS ---
 
 def test_create_movie(client, db_session):
     payload = {"id": 1, "title": "Inception", "genres": "Action|Sci-Fi"}
@@ -57,6 +57,14 @@ def test_create_movie(client, db_session):
     assert db_movie is not None
     assert db_movie.title == "Inception"
 
+    payload = {"id": 2, "title": "Chainsaw Man: Reze arc", "genres": "Anime|Action"}
+    response = client.post("/movies", json=payload)
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["title"] == "Chainsaw Man: Reze arc"
+    assert data["id"] == 2
 
 def test_get_movies_list(client, db_session):
     movie1 = movies.Movie(id=10, title="Movie A", genres="Drama")
@@ -82,6 +90,16 @@ def test_get_movie_by_id(client, db_session):
 
     assert response_ok.status_code == 200
     assert response_ok.json()["title"] == "The Matrix"
+    print("1 (Found): OK")
+
+    existing_movie = movies.Movie(id=12, title="The Movie", genres="Sci-Fi")
+    db_session.add(existing_movie)
+    db_session.commit()
+
+    response_ok = client.get("/movies/12")
+
+    assert response_ok.status_code == 200
+    assert response_ok.json()["title"] == "The Movie"
     print("1 (Found): OK")
 
     response_404 = client.get("/movies/9999")
