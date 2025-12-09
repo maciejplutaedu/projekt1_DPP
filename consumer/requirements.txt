@@ -1,0 +1,6 @@
+pika
+requests
+opencv-python-headless
+tensorflow==1.15
+numpy
+protobuf==3.19.6

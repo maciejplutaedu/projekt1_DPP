@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: pass
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    depends_on:
+      - rabbitmq
+    ports:
+      - "8000:8000"
+    volumes:
+      - producer-results:/app/results
+      - producer-images:/app/images
+
+  consumer:
+    build:
+      context: .
+      dockerfile: consumer/Dockerfile
+    depends_on:
+      - rabbitmq
+    volumes:
+      - producer-results:/app/results
+      - producer-images:/app/images
+    restart: always
+
+volumes:
+  producer-results:
+  producer-images:

@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pika
+opencv-python-headless
+tensorflow==1.15
+numpy
+requests
+protobuf==3.19.6
