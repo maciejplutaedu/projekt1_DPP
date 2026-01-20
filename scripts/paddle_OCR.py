@@ -5,9 +5,6 @@ from paddleocr import PaddleOCR
 import re
 
 
-# ========================
-# OCR
-# ========================
 reader = PaddleOCR(use_textline_orientation=False,
                    lang='en',
                    use_gpu=False,
@@ -41,7 +38,6 @@ def read_plate(plate_image, reader):
 
         y_center = sum([p[1] for p in box]) / 4
 
-        # pomijamy dolny napis tablicy
         if y_center > h * 0.75:
             continue
 
@@ -56,23 +52,22 @@ def read_plate(plate_image, reader):
 
 
 
-    # ===== USUWANIE PL =====
+    # USUWANIE PL
     if text.startswith("PL"):
         text = text[2:]
 
-    # ===== USUWANIE ZŁEJ PIERWSZEJ LITERY =====
+    # USUWANIE ZŁEJ PIERWSZEJ LITERY
     if len(text) > 0 and text[0] in INVALID_FIRST:
         text = text[1:]
 
-    # ===== SKRACANIE =====
+    #SKRACANIE
     if len(text) > 8:
         text = text[:8]
 
-        # ===== ZAMIANA CYFR NA LITERY =====
+    # ZAMIANA CYFR NA LITERY
     t = list(text)
 
     if len(text) < 7:
-        # poprawiamy tylko pierwszy znak
         if len(t) >= 1 and t[0] in DIGIT_TO_LETTER:
             t[0] = DIGIT_TO_LETTER[t[0]]
     elif len(text) < 8:
@@ -89,16 +84,12 @@ def read_plate(plate_image, reader):
     return raw_text, text
 
 
-
-# ========================
-# YOLO DETECTION
-# ========================
 def yolo_detection(img_path, model):
     image = cv2.imread(img_path)
     if image is None:
         return None, None
 
-    results = model(image, conf=0.1)[0]
+    results = model(image, conf=0.01, imgsz=640)[0]
     boxes = results.boxes
 
     if boxes is None or len(boxes) == 0:
@@ -112,14 +103,8 @@ def yolo_detection(img_path, model):
     return plate, image
 
 
-# ========================
-# PREPROCESS
-# ========================
 def preproccess_plate(plate_image):
     gray = cv2.cvtColor(plate_image, cv2.COLOR_BGR2GRAY)
-
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-    gray = clahe.apply(gray)
 
     blur = cv2.bilateralFilter(gray, 9, 75, 75)
 

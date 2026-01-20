@@ -9,7 +9,7 @@ def main():
         imgsz=940,
         batch=16,
         device=0,
-        project="runs",
+        project="../runs",
         name="plate_detector"
     )
 

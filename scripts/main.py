@@ -66,17 +66,9 @@ def plate_accuracy(pred, gt):
     return correct / max(len(gt), 1) * 100
 
 
-# ========================
-# MODELE
-# ========================
-model = YOLO("runs/plate_detector2/weights/best.pt")
+model = YOLO("../runs/plate_detector2/weights/best.pt")
 
 
-
-
-# ========================
-# DANE
-# ========================
 gt_data = load_gt()
 images = list(gt_data.keys())
 sample = random.sample(images, min(100, len(images)))
