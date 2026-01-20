@@ -1,0 +1,8 @@
+path: C:/Users/Macio/PycharmProjects/plate_ocr/dataset
+
+train: images/train
+val: images/val
+
+nc: 1
+names:
+  0: plate
