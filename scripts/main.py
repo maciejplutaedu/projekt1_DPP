@@ -1,22 +1,13 @@
-import os
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-
 from ultralytics import YOLO
-import easyocr
 import xml.etree.ElementTree as ET
 import random
 import time
-from paddleocr import PaddleOCR
 from paddle_OCR import run_ocr_test
 
-#from ocr import run_ocr_test
 
 IMAGE_DIR = "../data/photos"
 XML_PATH = "../data/annotations.xml"
 
-# ========================
-# OCENA
-# ========================
 def calculate_final_grade(accuracy_percent: float, processing_time_sec: float) -> float:
     if accuracy_percent < 60 or processing_time_sec > 60:
         return 2.0
@@ -30,9 +21,6 @@ def calculate_final_grade(accuracy_percent: float, processing_time_sec: float) -
     return round(grade * 2) / 2
 
 
-# ========================
-# POPRAWNA REJESTRACJA
-# ========================
 def load_gt():
     tree = ET.parse(XML_PATH)
     root = tree.getroot()
@@ -46,25 +34,6 @@ def load_gt():
             if attr is not None:
                 gt[name] = attr.text.strip().upper()
     return gt
-
-
-# ========================
-# PORÓWNANIE
-# ========================
-def plate_accuracy(pred, gt):
-    if not pred or not gt:
-        return 0.0
-
-    pred = pred.replace(" ", "").upper()
-    gt = gt.replace(" ", "").upper()
-
-    correct = 0
-    for p, t in zip(pred, gt):
-        if p == t:
-            correct += 1
-
-    return correct / max(len(gt), 1) * 100
-
 
 model = YOLO("../runs/plate_detector2/weights/best.pt")
 
